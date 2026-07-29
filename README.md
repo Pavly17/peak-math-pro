@@ -12,7 +12,7 @@ Peak Math Pro is a sleek, professional, and powerful web-based calculator design
 
 *   **Scientific Mode:** Complex numbers, trigonometry, logarithms, and standard mathematical functions.
 *   **Graphing Mode:** Interactive 2D function plotting with zoom, pan, and coordinate tracing.
-*   **Calculus Hub:** Symbolic differentiation and numeric integration.
+*   **Calculus Hub:** Symbolic differentiation and numeric/analytical integration.
 *   **Linear Algebra:** Matrix operations including addition, multiplication, determinant, and inversion.
 *   **Physics Constants:** Quick access to essential physical constants for rapid calculations.
 *   **Beautiful UI:** Premium dark-mode interface with glassmorphism, responsive design, and smooth animations.
@@ -24,25 +24,26 @@ Peak Math Pro is a sleek, professional, and powerful web-based calculator design
 *   **[KaTeX](https://katex.org/)**: For beautiful, fast LaTeX math rendering in the browser.
 *   **[Function Plot (D3)](https://mauriciopoppe.github.io/function-plot/)**: For 2D graphing and rendering.
 
-## 📂 Project Structure
+## 📁 Project Structure
 
 ```
-calc/
-│
+peak-math-pro/
 ├── index.html       # Main application entry point
 ├── css/
 │   └── style.css    # Premium UI styles, glassmorphism & animations
-└── js/
-    └── app.js       # Core logic, DOM manipulation & math handling
+├── js/
+│   └── app.js       # Core logic, DOM manipulation & math handling
+├── LICENSE
+└── README.md
 ```
 
-## 🛠️ Installation & Usage
+## 🖥️ Installation & Usage
 
 Since this is a Vanilla JS application, no complex build steps are required.
 
 1.  **Clone the repository:**
     ```bash
-    git clone https://github.com/yourusername/peak-math-pro.git
+    git clone https://github.com/Pavly17/peak-math-pro.git
     ```
 2.  **Navigate to the directory:**
     ```bash
@@ -60,7 +61,7 @@ Since this is a Vanilla JS application, no complex build steps are required.
 ## 🤝 Contributing
 
 Contributions, issues, and feature requests are welcome!
-Feel free to check the [issues page](https://github.com/yourusername/peak-math-pro/issues).
+Feel free to check the [issues page](https://github.com/Pavly17/peak-math-pro/issues).
 
 1. Fork the Project
 2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
@@ -68,6 +69,6 @@ Feel free to check the [issues page](https://github.com/yourusername/peak-math-p
 4. Push to the Branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-## 📝 License
+## 📜 License
 
 Distributed under the MIT License. See `LICENSE` for more information.

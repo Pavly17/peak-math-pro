@@ -38,6 +38,13 @@ body {
   overflow: hidden;
 }
 
+/* Fallback for browsers that don't support backdrop-filter */
+@supports not (backdrop-filter: blur(10px)) {
+  .card, .sidebar, .input-area {
+    background: var(--card-bg) !important;
+  }
+}
+
 /* Sidebar Navigation */
 .sidebar {
   width: var(--sidebar-w);
@@ -180,7 +187,7 @@ body {
   font-size: 1rem;
   color: var(--text-muted);
   margin-bottom: 8px;
-  font-family: 'Fira Code', monospace; /* Good for math input */
+  font-family: 'Fira Code', monospace;
 }
 
 .history-result {
@@ -275,12 +282,11 @@ input::placeholder {
 #graph-container {
   width: 100%;
   height: 60vh;
-  background: white; /* function-plot works best on light or we need specific CSS for it. Let's keep it clean or make it somewhat readable */
+  background: var(--bg-secondary);
   border-radius: 20px;
   overflow: hidden;
   box-shadow: inset 0 0 20px rgba(0,0,0,0.1);
 }
-/* Override d3/function-plot styles for dark mode if needed, but it's complex. Let's add a slight tint or keep background light for the plot */
 
 .graph-controls {
   display: flex;
@@ -298,12 +304,87 @@ input::placeholder {
   gap: 15px;
   border: 1px solid var(--card-border);
   box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+  flex: 1;
 }
 
 .graph-input-group span {
   font-size: 1.2rem;
   font-weight: 600;
   color: var(--accent);
+}
+
+.graph-hint {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  text-align: center;
+  margin-top: 5px;
+}
+
+/* Calculus Styles */
+.card-description {
+  color: var(--text-muted);
+  margin-bottom: 15px;
+}
+
+.calculus-symbol {
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 1.2rem;
+}
+
+.calculus-result {
+  margin-top: 25px;
+  font-size: 1.4rem;
+  min-height: 40px;
+  color: var(--success);
+}
+
+/* Matrix Styles */
+.matrix-input {
+  margin-bottom: 15px;
+}
+
+.matrix-pad {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.matrix-result {
+  margin-top: 30px;
+  font-size: 1.4rem;
+  color: var(--success);
+  text-align: center;
+  overflow-x: auto;
+}
+
+/* Physics Styles */
+.physics-pad {
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+  margin-top: 0;
+}
+
+.physics-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin-bottom: 0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.physics-card:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+}
+
+.physics-card strong {
+  font-size: 1.1rem;
+  margin-bottom: 5px;
+  color: var(--accent);
+}
+
+.physics-value {
+  color: var(--text-muted);
 }
 
 /* Custom scrollbar */
@@ -385,16 +466,5 @@ code {
   padding: 2px 6px;
   border-radius: 4px;
   font-family: 'Fira Code', monospace;
-  color: var(--accent);
-}
-
-.physics-card {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-.physics-card strong {
-  font-size: 1.1rem;
-  margin-bottom: 5px;
   color: var(--accent);
 }

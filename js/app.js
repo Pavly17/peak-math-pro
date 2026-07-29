@@ -24,6 +24,17 @@ navItems.forEach(item => {
       // Need a slight delay for the container to become visible before rendering
       setTimeout(plot, 100); 
     }
+    
+    // Focus on the main input for scientific mode
+    if (mode === 'scientific' && mainInput) {
+      mainInput.focus();
+    }
+    
+    // Focus on graph input for graphing mode
+    if (mode === 'graphing') {
+      const graphInput = document.getElementById('graph-inp-1');
+      if (graphInput) graphInput.focus();
+    }
   });
 });
 
@@ -33,7 +44,9 @@ function performCalculation() {
   if (!input) return;
 
   try {
-    const result = math.evaluate(input);
+    // Parse the input first for better error handling
+    const node = math.parse(input);
+    const result = node.evaluate();
     const resultStr = math.format(result, { precision: 14 });
     
     addToHistory(input, resultStr);
@@ -62,7 +75,8 @@ function addToHistory(input, result) {
   
   // Try rendering LaTeX
   try {
-    katex.render(math.parse(result).toTex(), resEl, { throwOnError: false });
+    const node = typeof result === 'string' ? math.parse(result) : result;
+    katex.render(node.toTex(), resEl, { throwOnError: false });
   } catch {
     resEl.textContent = result;
   }
@@ -82,17 +96,25 @@ if (mainInput) {
     });
 }
 
-function addText(text, suffix = '') {
+// Improved addText function to handle multiple arguments
+function addText(text, ...args) {
   if (!mainInput) return;
+  
+  // If there are additional arguments, append them
+  let fullText = text;
+  if (args.length > 0) {
+    fullText += args.join('');
+  }
+  
   const start = mainInput.selectionStart;
   const end = mainInput.selectionEnd;
   const current = mainInput.value;
-  mainInput.value = current.substring(0, start) + text + suffix + current.substring(end);
+  mainInput.value = current.substring(0, start) + fullText + current.substring(end);
   mainInput.focus();
-  mainInput.setSelectionRange(start + text.length, start + text.length);
+  mainInput.setSelectionRange(start + fullText.length, start + fullText.length);
 }
 
-// Global exposure for inline onclick handlers (or we could use event listeners)
+// Global exposure for inline onclick handlers
 window.addText = addText;
 window.performCalculation = performCalculation;
 
@@ -104,6 +126,9 @@ function plot() {
   
   const fn = inputEl.value || 'sin(x)';
   try {
+    // Clear previous plot
+    containerEl.innerHTML = '';
+    
     functionPlot({
       target: '#graph-container',
       width: containerEl.offsetWidth,
@@ -120,10 +145,20 @@ function plot() {
         renderer: function (x, y, index) {
           return 'f(' + x.toFixed(2) + ') = ' + y.toFixed(2);
         }
+      },
+      // Dark mode styling for function-plot
+      xAxis: {
+        label: 'x',
+        domain: [-10, 10]
+      },
+      yAxis: {
+        label: 'f(x)',
+        domain: [-10, 10]
       }
     });
   } catch (e) {
     console.error("Plot error:", e);
+    containerEl.innerHTML = '<div style="color: var(--danger); padding: 20px; text-align: center;">Error plotting function. Please check your input.</div>';
   }
 }
 
@@ -135,18 +170,26 @@ function doCalculus(type) {
   const resEl = type === 'diff' ? document.getElementById('calc-diff-res') : document.getElementById('calc-int-res');
   if(!resEl) return;
   
+  // Clear previous errors
+  resEl.style.color = '';
+  
   try {
     if (type === 'diff') {
       const res = math.derivative(input, 'x');
       katex.render(res.toTex(), resEl, { displayMode: true });
     } else {
-      // Numerical integration fallback message
-      resEl.innerHTML = `<span style="color:var(--warning); font-size:1rem;">Symbolic integration is complex.<br/>Try standard scientific mode for numerical eval: <code>integrate('${input}', 'x', 0, 1)</code></span>`;
+      // Use math.js for symbolic integration
+      const res = math.integrate(input, 'x');
+      katex.render(res.toTex(), resEl, { displayMode: true });
     }
   } catch (err) {
-    resEl.textContent = "Error in expression";
+    console.error("Calculus error:", err);
+    resEl.innerHTML = "Error in expression: " + err.message;
     resEl.style.color = "var(--danger)";
-    setTimeout(() => resEl.style.color = "inherit", 2000);
+    setTimeout(() => {
+      resEl.style.color = "var(--success)";
+      resEl.textContent = '';
+    }, 3000);
   }
 }
 window.doCalculus = doCalculus;
@@ -157,6 +200,9 @@ function matrixOp(op) {
   const b = document.getElementById('mat-b').value;
   const resEl = document.getElementById('mat-res');
   if(!resEl) return;
+
+  // Clear previous errors
+  resEl.style.color = '';
 
   try {
     const matA = math.matrix(math.evaluate(a));
@@ -171,14 +217,28 @@ function matrixOp(op) {
     } else if (op === 'det') {
       result = math.det(matA);
     } else if (op === 'inv') {
+      // Check if matrix is square
+      if (matA.length !== matA[0].length) {
+        throw new Error("Matrix must be square for inversion");
+      }
       result = math.inv(matA);
     }
 
-    katex.render(math.parse(math.format(result)).toTex(), resEl, { displayMode: true });
+    // Format the result for display
+    const resultStr = math.format(result, { precision: 10 });
+    try {
+      const node = typeof resultStr === 'string' ? math.parse(resultStr) : result;
+      katex.render(node.toTex(), resEl, { displayMode: true });
+    } catch {
+      resEl.textContent = resultStr;
+    }
   } catch (err) {
-    resEl.textContent = "Operation failed. Check dimensions or format.";
+    console.error("Matrix error:", err);
+    resEl.textContent = "Operation failed: " + err.message;
     resEl.style.color = "var(--danger)";
-    setTimeout(() => resEl.style.color = "inherit", 2000);
+    setTimeout(() => {
+      resEl.style.color = "var(--success)";
+    }, 3000);
   }
 }
 window.matrixOp = matrixOp;
@@ -186,7 +246,15 @@ window.matrixOp = matrixOp;
 // Initial Setup
 window.addEventListener('resize', () => {
     // Re-plot if graphing is active
-    if (document.getElementById('graphing').classList.contains('active')) {
-        plot();
+    if (document.getElementById('graphing') && document.getElementById('graphing').classList.contains('active')) {
+        setTimeout(plot, 100); // Small delay to allow container to resize
     }
+});
+
+// Initialize on load
+window.addEventListener('load', () => {
+  // Focus on main input
+  if (mainInput) {
+    mainInput.focus();
+  }
 });
