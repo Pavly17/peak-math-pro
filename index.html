@@ -20,6 +20,12 @@
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <script src="https://unpkg.com/function-plot/dist/function-plot.js"></script>
   
+  <!-- Plotly for 3D graphing -->
+  <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+  
+  <!-- jsPDF for PDF export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  
   <!-- Main Stylesheet -->
   <link rel="stylesheet" href="css/style.css" />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Code&display=swap">
@@ -34,8 +40,20 @@
     <div class="nav-item" data-mode="graphing" data-tooltip="Graphing (2D Functions)">
       <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h20M2 3v17M18 10l-4-4-4 4-4-4"/></svg>
     </div>
+    <div class="nav-item" data-mode="graphing3d" data-tooltip="3D Graphing">
+      <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M3 12h18M5 5l14 14M19 5L5 19"/></svg>
+    </div>
     <div class="nav-item" data-mode="calculus" data-tooltip="Calculus (Derivatives & Integrals)">
       <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v18M16 12H1M23 12h-7"/></svg>
+    </div>
+    <div class="nav-item" data-mode="diffeq" data-tooltip="Differential Equations">
+      <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h16M4 12l4-4M4 12l4 4"/><circle cx="16" cy="12" r="3"/></svg>
+    </div>
+    <div class="nav-item" data-mode="statistics" data-tooltip="Statistics (Mean, Median, Std Dev)">
+      <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+    </div>
+    <div class="nav-item" data-mode="geometry" data-tooltip="Geometric Transformations">
+      <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/></svg>
     </div>
     <div class="nav-item" data-mode="linear" data-tooltip="Linear Algebra (Matrices)">
       <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/></svg>
@@ -55,6 +73,18 @@
       <div class="status">
         <div class="dot"></div>
         Engine Active (Math.js v11.8)
+      </div>
+      <div class="top-bar-actions">
+        <button class="btn-icon" id="theme-toggle" onclick="toggleTheme()" data-tooltip="Toggle Dark/Light Theme" title="Toggle Theme">
+          <svg class="sun-icon" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+          <svg class="moon-icon" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="display:none;"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+        </button>
+        <button class="btn-icon" id="export-btn" onclick="exportToPDF()" data-tooltip="Export Results as PDF" title="Export PDF">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+        </button>
+        <button class="btn-icon" id="help-btn" onclick="showShortcuts()" data-tooltip="Keyboard Shortcuts" title="Shortcuts">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3M12 17h.01"/></svg>
+        </button>
       </div>
     </header>
 
@@ -185,7 +215,129 @@
       </div>
     </section>
 
+    <!-- 3D Graphing Mode -->
+    <section id="graphing3d" class="mode-container">
+      <h2>3D Graphing</h2>
+      <div class="card">
+        <h3>Plot 3D Surfaces</h3>
+        <p class="card-description">Enter a function z = f(x, y). Example: sin(x) * cos(y)</p>
+        <div class="input-area">
+          <span class="calculus-symbol">z =</span>
+          <input type="text" id="graph3d-inp" placeholder="sin(x) * cos(y)" value="sin(sqrt(x^2 + y^2))" autocomplete="off"/>
+          <button class="btn-circle" onclick="plot3D()" aria-label="Plot 3D">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          </button>
+        </div>
+        <div id="graph3d-container" style="width: 100%; height: 60vh; margin-top: 20px;"></div>
+      </div>
+    </section>
+
+    <!-- Differential Equations Mode -->
+    <section id="diffeq" class="mode-container">
+      <h2>Differential Equations Solver</h2>
+      <div class="card">
+        <h3>Solve ODEs</h3>
+        <p class="card-description">Enter a differential equation. Example: dy/dx = 2*x with y(0) = 1</p>
+        <div class="input-area">
+          <span class="calculus-symbol">dy/dx =</span>
+          <input type="text" id="ode-inp" placeholder="2*x" value="y" autocomplete="off"/>
+        </div>
+        <div class="input-area" style="margin-top: 10px;">
+          <span class="calculus-symbol">y(0) =</span>
+          <input type="text" id="ode-ic" placeholder="Initial condition" value="1" autocomplete="off"/>
+        </div>
+        <div class="input-area" style="margin-top: 10px;">
+          <span class="calculus-symbol">x range:</span>
+          <input type="text" id="ode-range" placeholder="[0, 10]" value="[0, 10]" autocomplete="off"/>
+          <button class="btn-circle" onclick="solveODE()" aria-label="Solve ODE">GO</button>
+        </div>
+        <div id="ode-res" class="calculus-result"></div>
+        <div id="ode-plot" style="width: 100%; height: 40vh; margin-top: 20px;"></div>
+      </div>
+    </section>
+
+    <!-- Statistics Mode -->
+    <section id="statistics" class="mode-container">
+      <h2>Statistics Calculator</h2>
+      <div class="card">
+        <h3>Descriptive Statistics</h3>
+        <p class="card-description">Enter data points separated by commas. Example: 1, 2, 3, 4, 5</p>
+        <div class="input-area">
+          <input type="text" id="stats-data" placeholder="1, 2, 3, 4, 5" value="10, 20, 30, 40, 50" autocomplete="off"/>
+          <button class="btn-circle" onclick="calcStats()" aria-label="Calculate Statistics">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+          </button>
+        </div>
+        <div id="stats-res" class="matrix-result" style="text-align: left; margin-top: 20px;"></div>
+      </div>
+      <div class="card">
+        <h3>Examples</h3>
+        <div class="quick-pad" style="grid-template-columns: repeat(2, 1fr);">
+          <button class="pad-btn" onclick="setStatsExample('1,2,3,4,5,6,7,8,9,10')">Basic 1-10</button>
+          <button class="pad-btn" onclick="setStatsExample('5.2, 7.8, 3.1, 9.4, 6.7, 8.2, 4.5')">Decimals</button>
+          <button class="pad-btn" onclick="setStatsExample('100, 150, 200, 250, 300, 350, 400')">Large numbers</button>
+          <button class="pad-btn" onclick="setStatsExample('-5, -2, 0, 3, 7, 12, -8, 4')">Negative values</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Geometric Transformations Mode -->
+    <section id="geometry" class="mode-container">
+      <h2>Geometric Transformations</h2>
+      <div class="card">
+        <h3>Transform Points</h3>
+        <p class="card-description">Enter point(s) as [x, y] or [[x1,y1],[x2,y2],...]</p>
+        <div class="input-area">
+          <span class="calculus-symbol">Point(s):</span>
+          <input type="text" id="geo-point" placeholder="[1, 2]" value="[[1,0],[0,1],[1,1]]" autocomplete="off"/>
+        </div>
+        <div class="quick-pad" style="margin-top: 15px; grid-template-columns: repeat(4, 1fr);">
+          <button class="pad-btn" onclick="geoTransform('rotate', 90)">Rotate 90°</button>
+          <button class="pad-btn" onclick="geoTransform('rotate', 180)">Rotate 180°</button>
+          <button class="pad-btn" onclick="geoTransform('rotate', 45)">Rotate 45°</button>
+          <button class="pad-btn" onclick="customRotate()">Custom Angle</button>
+          <button class="pad-btn" onclick="geoTransform('scale', 2)">Scale 2x</button>
+          <button class="pad-btn" onclick="geoTransform('scale', 0.5)">Scale 0.5x</button>
+          <button class="pad-btn" onclick="geoTransform('reflect', 'x')">Reflect X</button>
+          <button class="pad-btn" onclick="geoTransform('reflect', 'y')">Reflect Y</button>
+        </div>
+        <div id="geo-res" class="matrix-result" style="margin-top: 20px;"></div>
+        <div id="geo-plot" style="width: 100%; height: 40vh; margin-top: 20px;"></div>
+      </div>
+    </section>
+
   </main>
+
+  <!-- Keyboard Shortcuts Modal -->
+  <div id="shortcuts-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Keyboard Shortcuts</h3>
+        <button class="btn-close" onclick="closeShortcuts()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="shortcut-grid">
+          <div class="shortcut-item"><kbd>Ctrl+1</kbd><span>Scientific Mode</span></div>
+          <div class="shortcut-item"><kbd>Ctrl+2</kbd><span>Graphing Mode</span></div>
+          <div class="shortcut-item"><kbd>Ctrl+3</kbd><span>3D Graphing</span></div>
+          <div class="shortcut-item"><kbd>Ctrl+4</kbd><span>Calculus Mode</span></div>
+          <div class="shortcut-item"><kbd>Ctrl+5</kbd><span>Differential Equations</span></div>
+          <div class="shortcut-item"><kbd>Ctrl+6</kbd><span>Statistics Mode</span></div>
+          <div class="shortcut-item"><kbd>Ctrl+7</kbd><span>Geometry Mode</span></div>
+          <div class="shortcut-item"><kbd>Ctrl+8</kbd><span>Linear Algebra</span></div>
+          <div class="shortcut-item"><kbd>Ctrl+9</kbd><span>Physics Mode</span></div>
+          <div class="shortcut-item"><kbd>Enter</kbd><span>Calculate/Plot</span></div>
+          <div class="shortcut-item"><kbd>Escape</kbd><span>Close Modal</span></div>
+          <div class="shortcut-item"><kbd>?</kbd><span>Show Shortcuts</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Progress Bar -->
+  <div id="progress-bar" class="progress-container" style="display: none;">
+    <div class="progress-bar"></div>
+  </div>
 
   <!-- Main JavaScript File -->
   <script src="js/app.js"></script>
