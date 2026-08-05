@@ -17,7 +17,7 @@
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
   
   <!-- D3 and Function Plot for graphing -->
-  <script src="https://unpkg.com/d3@3/d3.min.js"></script>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
   <script src="https://unpkg.com/function-plot/dist/function-plot.js"></script>
   
   <!-- Main Stylesheet -->
@@ -92,12 +92,12 @@
         <div class="graph-input-group">
           <span>f(x) =</span>
           <input type="text" id="graph-inp-1" placeholder="x^2" value="sin(x)" />
-          <button class="btn-circle" onclick="plot()"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg></button>
+          <button class="btn-circle" onclick="plot()" aria-label="Plot"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg></button>
         </div>
       </div>
       <div class="card" id="graph-container"></div>
       <div class="graph-hint">
-        Scroll to zoom, drag to pan. Root finding and tracing active.
+        Scroll to zoom, drag to pan. Root finding and tracing active. Press Enter to plot.
       </div>
     </section>
 

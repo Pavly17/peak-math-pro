@@ -25,16 +25,22 @@ navItems.forEach(item => {
       setTimeout(plot, 100); 
     }
     
-    // Focus on the main input for scientific mode
-    if (mode === 'scientific' && mainInput) {
-      mainInput.focus();
-    }
-    
-    // Focus on graph input for graphing mode
-    if (mode === 'graphing') {
-      const graphInput = document.getElementById('graph-inp-1');
-      if (graphInput) graphInput.focus();
-    }
+    // Focus on the appropriate input for each mode
+    setTimeout(() => {
+      if (mode === 'scientific') {
+        const mainInp = document.getElementById('main-input');
+        if (mainInp) mainInp.focus();
+      } else if (mode === 'graphing') {
+        const graphInput = document.getElementById('graph-inp-1');
+        if (graphInput) graphInput.focus();
+      } else if (mode === 'calculus') {
+        const calcInput = document.getElementById('calc-diff-inp');
+        if (calcInput) calcInput.focus();
+      } else if (mode === 'linear') {
+        const matInput = document.getElementById('mat-a');
+        if (matInput) matInput.focus();
+      }
+    }, 50);
   });
 });
 
@@ -73,12 +79,28 @@ function addToHistory(input, result) {
   const resEl = document.createElement('div');
   resEl.className = 'history-result';
   
-  // Try rendering LaTeX
+  // Try rendering LaTeX with better error handling
   try {
-    const node = typeof result === 'string' ? math.parse(result) : result;
-    katex.render(node.toTex(), resEl, { throwOnError: false });
-  } catch {
-    resEl.textContent = result;
+    if (result && typeof result === 'object' && typeof result.toTex === 'function') {
+      katex.render(result.toTex(), resEl, { throwOnError: false });
+    } else if (typeof result === 'string') {
+      // Try to parse and render
+      try {
+        const node = math.parse(result);
+        if (node && typeof node.toTex === 'function') {
+          katex.render(node.toTex(), resEl, { throwOnError: false });
+        } else {
+          resEl.textContent = result;
+        }
+      } catch (parseErr) {
+        resEl.textContent = result;
+      }
+    } else {
+      resEl.textContent = String(result);
+    }
+  } catch (katexErr) {
+    console.warn("KaTeX rendering failed:", katexErr);
+    resEl.textContent = String(result);
   }
 
   item.appendChild(inEl);
@@ -162,6 +184,16 @@ function plot() {
   }
 }
 
+// Add Enter key support for graphing input
+const graphInput = document.getElementById('graph-inp-1');
+if (graphInput) {
+  graphInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      plot();
+    }
+  });
+}
+
 window.plot = plot;
 
 // --- Calculus Logic ---
@@ -215,10 +247,16 @@ function matrixOp(op) {
       const matB = math.matrix(math.evaluate(b));
       result = math.multiply(matA, matB);
     } else if (op === 'det') {
+      // Check if matrix is square before calculating determinant
+      const size = matA.size();
+      if (size.length !== 2 || size[0] !== size[1]) {
+        throw new Error("Matrix must be square for determinant");
+      }
       result = math.det(matA);
     } else if (op === 'inv') {
       // Check if matrix is square
-      if (matA.length !== matA[0].length) {
+      const size = matA.size();
+      if (size.length !== 2 || size[0] !== size[1]) {
         throw new Error("Matrix must be square for inversion");
       }
       result = math.inv(matA);
@@ -226,10 +264,27 @@ function matrixOp(op) {
 
     // Format the result for display
     const resultStr = math.format(result, { precision: 10 });
+    
+    // Try to render as LaTeX, but handle matrices and simple values gracefully
     try {
-      const node = typeof resultStr === 'string' ? math.parse(resultStr) : result;
-      katex.render(node.toTex(), resEl, { displayMode: true });
-    } catch {
+      if (result && typeof result.toTex === 'function') {
+        katex.render(result.toTex(), resEl, { displayMode: true });
+      } else if (Array.isArray(result) || (result && typeof result === 'object')) {
+        // For matrices or complex objects, show formatted text
+        resEl.textContent = resultStr;
+        resEl.style.fontSize = '1.2rem';
+        resEl.style.textAlign = 'center';
+      } else {
+        // For simple values, try to parse and render
+        const node = typeof resultStr === 'string' ? math.parse(resultStr) : result;
+        if (node && typeof node.toTex === 'function') {
+          katex.render(node.toTex(), resEl, { displayMode: true });
+        } else {
+          resEl.textContent = resultStr;
+        }
+      }
+    } catch (latexErr) {
+      console.warn("LaTeX rendering failed:", latexErr);
       resEl.textContent = resultStr;
     }
   } catch (err) {

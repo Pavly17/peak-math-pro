@@ -159,6 +159,7 @@ body {
 }
 
 /* Scientific Mode */
+/* History section - ensure it has minimum height even when empty */
 .history {
   flex: 1;
   overflow-y: auto;
@@ -167,6 +168,16 @@ body {
   gap: 15px;
   margin-bottom: 25px;
   padding-right: 10px;
+  min-height: 100px;
+}
+
+.history:empty::before {
+  content: "No calculations yet. Start typing above!";
+  color: var(--text-muted);
+  font-style: italic;
+  text-align: center;
+  padding: 20px;
+  opacity: 0.5;
 }
 
 .history-item {
